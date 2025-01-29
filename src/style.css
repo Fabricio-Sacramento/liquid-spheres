@@ -1,9 +1,15 @@
 body {
-  margin: 0;
-  overflow: hidden;
-  background: linear-gradient(to bottom, #87CEEB, #1E3A5F);
+  background-image: linear-gradient(to bottom, #434343 65%, black 100%);
+  overflow: hidden; /* Evita barras de rolagem desnecessárias */
+  height: 100vh;
 }
 
 canvas {
-  display: block;
+  position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Certifique-se que está acima do fundo */
+    pointer-events: none; /* Evita interferência com cliques */
 }

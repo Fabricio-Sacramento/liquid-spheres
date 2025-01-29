@@ -31,21 +31,21 @@ const fragmentShader = `
 
 void main() {
     // Cor base com variação para dar um efeito mais orgânico
-    vec3 baseColor = mix(vec3(0.0, 0.3, 0.8), vec3(0.2, 0.6, 1.0), sin(time * 0.3) * 0.5 + 0.5);
+    vec3 baseColor = mix(vec3(0.6588, 0.7922, 0.7294), vec3(0.3647, 0.2549, 0.3412), sin(time * 0.3) * 0.5 + 0.5);
     
     // Reflexos Fresnel - Brilho nas bordas
     vec3 viewDirection = normalize(vViewPosition);
-    float fresnel = pow(1.0 - dot(viewDirection, vNormal), 2.0) * 0.5;
+    float fresnel = pow(1.0 - dot(viewDirection, vNormal), 2.0) * 0.15;
 
     // Reflexos sutis dinâmicos para efeito plástico/óleo
     float highlight = pow(1.0 - length(vUv - 0.5 + sin(time * 0.3) * 0.05), 8.0);
-    vec3 reflection = vec3(1.0, 1.0, 1.0) * highlight * 0.55;
+    vec3 reflection = vec3(1.0, 1.0, 1.0) * highlight * 0.4;
 
     // Combinar os reflexos com a cor base
     vec3 finalColor = baseColor + reflection + fresnel * 0.5;
 
     // Transparência variável para efeito mais realista
-    float alpha = 0.9 + sin(time * 0.5) * 0.5;
+    float alpha = 1.0;
 
     gl_FragColor = vec4(finalColor, alpha);
 }
