@@ -28,8 +28,8 @@ export function createScene() {
     pointLight.position.set(5, 5, 5);
     scene.add(pointLight);
 
-    // Criar uma esfera simples (por enquanto)
-    const geometry = new THREE.SphereGeometry(1, 64, 64);
+    // Criar uma esfera simples
+    const geometry = new THREE.SphereGeometry(2.2, 128, 128);
     const material = new THREE.MeshStandardMaterial({ color: 0x0077ff, roughness: 0.2, metalness: 0.5 });
     const sphere = new THREE.Mesh(geometry, liquidShaderMaterial);
     scene.add(sphere);
