@@ -1,5 +1,5 @@
 body {
-  background-image: linear-gradient(to bottom, #828282 65%, rgb(77, 77, 77) 100%);
+
   overflow: hidden; /* Evita barras de rolagem desnecessárias */
   height: 100vh;
 }
