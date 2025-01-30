@@ -35,7 +35,7 @@ void main() {
     
     // Reflexos Fresnel - Brilho nas bordas
     vec3 viewDirection = normalize(vViewPosition);
-    float fresnel = pow(1.0 - dot(viewDirection, vNormal), 2.0) * 0.15;
+    float fresnel = pow(1.0 - dot(viewDirection, vNormal), 2.0) * 0.12;
 
     // Reflexos sutis dinâmicos para efeito plástico/óleo
     float highlight = pow(1.0 - length(vUv - 0.5 + sin(time * 0.3) * 0.05), 8.0);
