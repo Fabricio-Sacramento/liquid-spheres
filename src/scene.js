@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 export function createScene() {
-    // Criar a cena (Apenas uma declaração)
+    // Criar a cena
     const scene = new THREE.Scene();
     window.scene = scene;
 
@@ -26,8 +26,7 @@ export function createScene() {
 
     // Criar a câmera
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.z = 5;  // Ajuste fino conforme necessário
-
+    camera.position.z = 5;  
     window.camera = camera;
 
     // Seleciona o canvas do HTML
@@ -45,58 +44,63 @@ export function createScene() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
 
-    // Ajustar o z-index do canvas via JavaScript para evitar sumiço da esfera
+    // Ajustar o z-index do canvas via JavaScript
     canvas.style.position = "absolute";
     canvas.style.top = "0";
     canvas.style.left = "0";
     canvas.style.zIndex = "1";
 
-    // Adicionar luzes
+    // Criar luz ambiente para melhorar a iluminação
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
+    // Criar luz direcional para realçar reflexos
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(5, 10, 7.5);
+    directionalLight.position.set(5, 5, 5);
     scene.add(directionalLight);
 
-    const fillLight = new THREE.PointLight(0xffffff, 0.5);
-    fillLight.position.set(-3, -2, 3);
-    scene.add(fillLight);
-
-    // Criar a geometria da esfera
+    // Criar a geometria da esfera líquida
     const geometry = new THREE.SphereGeometry(2.0, 128, 128);
     const sphere = new THREE.Mesh(geometry, liquidShaderMaterial);
-    sphere.position.set(0, 0, 0)
+    sphere.position.set(0, 0, 0);
+    sphere.renderOrder = 1; // Garante que a esfera seja renderizada depois do fundo
+
+    // Adicionar efeito de transparência para um visual mais vítreo
+    sphere.material.transparent = true;
+    sphere.material.opacity = 0.95;
+    sphere.material.depthWrite = true; 
+
     scene.add(sphere);
 
     // Criar a geometria do plano côncavo (fundo)
-    const backgroundGeometry = new THREE.SphereGeometry(10, 64, 64);
-
-    // Criar material de vidro
-    const glassMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0x081D4E,
-        metalness: 0.1,  // Ajuste fino do reflexo
-        roughness: 10,  // Reduz rugosidade para refração mais visível
-        transmission: 1,  // Máxima transparência para um efeito realista
-        thickness: 1.5,  // Maior refração e distorção da luz
-        ior: 1.2,  // Ajusta refração
-        opacity: 0.5,  // Opacidade controlada para dar efeito de vidro
-        transparent: true,  // Ativa a transparência no material
-        depthWrite: false,  // Evita que ele "tape" objetos atrás
-        clearcoat: 1,
-        clearcoatRoughness: 0.2,
-        envMap: scene.environment,
-    });    
+    const backgroundGeometry = new THREE.SphereGeometry(10, 128, 128);
     
+    // Criar material de fundo com leve transparência para evitar esconder a esfera
+    const backgroundMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        transmission: 0.9,
+        opacity: 0.9,
+        transparent: true,
+        ior: 1.1,
+        thickness: 1.0,
+        roughness: 0.3,
+        metalness: 0.1,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.2,
+        envMap: scene.environment
+    });
 
-    // Aplicar o material de vidro ao plano côncavo
-    const backgroundMesh = new THREE.Mesh(backgroundGeometry, glassMaterial);
+    // Criar a malha do fundo
+    const backgroundMesh = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
     backgroundMesh.scale.set(-1, 1, 1);
-    backgroundMesh.position.set(0, 0, -6)
+    backgroundMesh.position.set(0, 0, -6);
+    backgroundMesh.rotation.set(0, 0, 0); 
+    backgroundMesh.renderOrder = 0; // Renderiza antes da esfera
+    backgroundMesh.material.depthWrite = false; // Evita que esconda a esfera
     scene.add(backgroundMesh);
 
-    // Criar a geometria do plano de fundo
-    const gradientGeometry = new THREE.PlaneGeometry(20, 20);
+    // Criar a geometria do plano de fundo (gradiente dinâmico)
+    const gradientGeometry = new THREE.PlaneGeometry(50, 50);
     const gradientMaterial = new THREE.ShaderMaterial({
         uniforms: {
             time: { value: 0.0 }
@@ -122,22 +126,25 @@ export function createScene() {
                 vec3 color = mix(darkGray, lightGray, gradient);
                 gl_FragColor = vec4(color, 1.0);
             }
-
         `,
         side: THREE.DoubleSide
     });
-    
+
+    // Criar a malha do gradiente de fundo
     const gradientMesh = new THREE.Mesh(gradientGeometry, gradientMaterial);
-    gradientMesh.scale.set(5, 5, 1);  // Aumenta o fundo para cobrir toda a tela
-    gradientMesh.position.set(0, 0, -8);  // Move o plano mais para trás
+    gradientMesh.scale.set(5, 5, 1);
+    gradientMesh.position.set(0, 0, -8);
     scene.add(gradientMesh);
 
     // Função de animação
     function animate() {
         requestAnimationFrame(animate);
+
+        // Mantém a esfera líquida girando
         sphere.rotation.y += 0.0099;
         sphere.rotation.x += 0.0005;
 
+        // Atualiza os shaders animados
         liquidShaderMaterial.uniforms.time.value += 0.05;
         gradientMaterial.uniforms.time.value += 0.01;
 
