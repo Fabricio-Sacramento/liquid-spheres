@@ -17,20 +17,19 @@ export function createScene() {
     const scene = new THREE.Scene();
     window.scene = scene;
 
-    // Carregar HDRI
+    // Carregar HDRI **APENAS para o plano côncavo**
     const hdrLoader = new RGBELoader();
     hdrLoader.load('/textures/lakeside_4k.hdr', function (hdrEquirect) {
         hdrEquirect.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = hdrEquirect;
-        scene.background = hdrEquirect; // Mantém o HDRI sem afetar o gradiente
+        scene.environment = hdrEquirect; // **Agora afeta apenas o plano côncavo**
     });
 
     // Criar câmera
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.z = 5;  
+    camera.position.z = 5;
     window.camera = camera;
 
-    // Configurar o renderizador
+    // Configurar renderizador
     const canvas = document.getElementById('webgl-canvas');
     const renderer = new THREE.WebGLRenderer({ 
         canvas: canvas,
@@ -48,12 +47,16 @@ export function createScene() {
     canvas.style.left = "0";
     canvas.style.zIndex = "1";
 
-    // ** Criar Esfera Líquida **
+    // ** Criar Esfera Líquida (AGORA COM O SHADER NOVAMENTE) **
     const sphereGeometry = new THREE.SphereGeometry(2.0, 128, 128);
     const sphere = new THREE.Mesh(sphereGeometry, liquidShaderMaterial);
     sphere.position.set(0, 0, 0);
     sphere.renderOrder = 1;  
-    sphere.material.depthWrite = true;  
+    sphere.material.depthWrite = true;
+    
+    // ** A Esfera líquida NÃO recebe o HDRI diretamente! **
+    sphere.material.envMap = null; 
+
     scene.add(sphere);
     window.sphere = sphere;
 
@@ -70,7 +73,8 @@ export function createScene() {
         metalness: 0.0,
         clearcoat: 1.0,
         clearcoatRoughness: 0.2,
-        depthWrite: false
+        depthWrite: false,
+        envMap: scene.environment // **HDRI aplicado SOMENTE no plano côncavo**
     });
 
     const concaveMesh = new THREE.Mesh(concaveGeometry, concaveMaterial);
@@ -116,9 +120,11 @@ export function createScene() {
     scene.add(gradientMesh);
     window.gradientMesh = gradientMesh;
 
-    // ** Função de animação **
+    // ** Função de animação (AGORA A ESFERA LÍQUIDA SE MOVE NOVAMENTE) **
     function animate() {
         requestAnimationFrame(animate);
+        
+        // **Restauramos a rotação da esfera líquida**
         sphere.rotation.y += 0.0099;
         sphere.rotation.x += 0.0005;
 
