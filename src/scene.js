@@ -19,7 +19,7 @@ export function createScene() {
 
     // Carregar o mapa de ambiente HDR
     const hdrLoader = new RGBELoader();
-    hdrLoader.load('/textures/nebulosa_4k.hdr', function (hdrEquirect) {
+    hdrLoader.load('/textures/lakeside_4k.hdr', function (hdrEquirect) {
         hdrEquirect.mapping = THREE.EquirectangularReflectionMapping;
         scene.environment = hdrEquirect;
     });
@@ -74,18 +74,17 @@ export function createScene() {
 
     // Criar material de vidro
     const glassMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        metalness: 0.3,  // Ajuste fino do reflexo
-        roughness: 0.7,  // Reduz rugosidade para refração mais visível
-        transmission: 1.0,  // Máxima transparência para um efeito realista
-        thickness: 2.0,  // Maior refração e distorção da luz
+        color: 0x081D4E,
+        metalness: 0.1,  // Ajuste fino do reflexo
+        roughness: 10,  // Reduz rugosidade para refração mais visível
+        transmission: 1,  // Máxima transparência para um efeito realista
+        thickness: 1.5,  // Maior refração e distorção da luz
         ior: 1.2,  // Ajusta refração
-        opacity: 0.2,  // Opacidade controlada para dar efeito de vidro
+        opacity: 0.5,  // Opacidade controlada para dar efeito de vidro
         transparent: true,  // Ativa a transparência no material
         depthWrite: false,  // Evita que ele "tape" objetos atrás
-        thickness: 0.7,
         clearcoat: 1,
-        clearcoatRoughness: 0.3,
+        clearcoatRoughness: 0.2,
         envMap: scene.environment,
     });    
     
@@ -115,10 +114,15 @@ export function createScene() {
             void main() {
                 vec3 darkGray = vec3(0.3); // Preto 70%
                 vec3 lightGray = vec3(0.75); // Preto 25%
-                float gradient = smoothstep(0.2, 0.8, vUv.y + sin(time * 0.5) * 0.05);
+                
+                // Criamos um efeito de onda para mover o gradiente suavemente
+                float wave = sin(vUv.y * 5.0 + time * 0.5) * 0.1;
+                float gradient = smoothstep(0.2, 0.8, vUv.y + wave);
+                
                 vec3 color = mix(darkGray, lightGray, gradient);
                 gl_FragColor = vec4(color, 1.0);
             }
+
         `,
         side: THREE.DoubleSide
     });
